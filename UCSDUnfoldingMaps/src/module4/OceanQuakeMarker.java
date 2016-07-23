@@ -30,7 +30,16 @@ public class OceanQuakeMarker extends EarthquakeMarker {
 		// and how it is set in the EarthquakeMarker constructor
 		
 		// TODO: Implement this method
-		
+		// has finished todo
+		float magnitude = getMagnitude();
+		if (magnitude < THRESHOLD_LIGHT){
+			radius = EarthquakeCityMap.radioMinor;
+		}else if (magnitude < THRESHOLD_MODERATE){
+			radius = EarthquakeCityMap.radiusLight;
+		}else{
+			radius = EarthquakeCityMap.radiusModerate;
+		}
+		pg.rect(x,y, radius, radius);
 	}
 	
 

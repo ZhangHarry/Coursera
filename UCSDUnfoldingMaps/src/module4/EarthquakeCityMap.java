@@ -1,7 +1,6 @@
 package module4;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.data.Feature;
@@ -13,6 +12,7 @@ import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.marker.MultiMarker;
 import de.fhpotsdam.unfolding.providers.Google;
 import de.fhpotsdam.unfolding.providers.MBTilesMapProvider;
+import de.fhpotsdam.unfolding.providers.Microsoft;
 import de.fhpotsdam.unfolding.utils.MapUtils;
 import parsing.ParseFeed;
 import processing.core.PApplet;
@@ -20,7 +20,7 @@ import processing.core.PApplet;
 /** EarthquakeCityMap
  * An application with an interactive map displaying earthquake data.
  * Author: UC San Diego Intermediate Software Development MOOC team
- * @author Your name here
+ * @author ZhangHr
  * Date: July 17, 2015
  * */
 public class EarthquakeCityMap extends PApplet {
@@ -59,6 +59,14 @@ public class EarthquakeCityMap extends PApplet {
 
 	// A List of country markers
 	private List<Marker> countryMarkers;
+
+	//todo add personal data constant
+	protected static int radioMinor = 5;
+	protected static int radiusLight = 10;
+	protected static int radiusModerate = 15;
+	protected int colorMinor = color(0, 0, 255);
+	protected int coloroLight = color(255, 255, 0);
+	protected int colorModerate = color(255, 0, 0);
 	
 	public void setup() {		
 		// (1) Initializing canvas and map tiles
@@ -69,6 +77,7 @@ public class EarthquakeCityMap extends PApplet {
 		}
 		else {
 			map = new UnfoldingMap(this, 200, 50, 650, 600, new Google.GoogleMapProvider());
+			map = new UnfoldingMap(this, 200, 50, 700, 500, new Microsoft.RoadProvider());
 			// IF YOU WANT TO TEST WITH A LOCAL FILE, uncomment the next line
 		    //earthquakesURL = "2.5_week.atom";
 		}
@@ -76,7 +85,7 @@ public class EarthquakeCityMap extends PApplet {
 		
 		// FOR TESTING: Set earthquakesURL to be one of the testing files by uncommenting
 		// one of the lines below.  This will work whether you are online or offline
-		//earthquakesURL = "test1.atom";
+//		earthquakesURL = "est1.atom";
 		//earthquakesURL = "test2.atom";
 		
 		// WHEN TAKING THIS QUIZ: Uncomment the next line
@@ -131,27 +140,57 @@ public class EarthquakeCityMap extends PApplet {
 	
 	// helper method to draw key in GUI
 	// TODO: Update this method as appropriate
+	// display left panel
 	private void addKey() {	
 		// Remember you can use Processing's graphics methods here
+		// pane
 		fill(255, 250, 240);
-		rect(25, 50, 150, 250);
-		
+		rect(25, 50, 150, 500);
+
+		int panelX = 50, panelYGap = 50, symbolYS = 125, textX = 75;
+		// earthquake key pane
 		fill(0);
 		textAlign(LEFT, CENTER);
 		textSize(12);
-		text("Earthquake Key", 50, 75);
-		
-		fill(color(255, 0, 0));
-		ellipse(50, 125, 15, 15);
-		fill(color(255, 255, 0));
-		ellipse(50, 175, 10, 10);
-		fill(color(0, 0, 255));
-		ellipse(50, 225, 5, 5);
-		
+		text("Earthquake Key", panelX, symbolYS - panelYGap);
+
+		fill(color(30,30,30));
+		triangle(panelX, symbolYS + 5, panelX + 5, symbolYS, panelX + 10, symbolYS + 5);
+		fill(255, 250, 240);
+		ellipse(panelX, symbolYS + panelYGap, radiusLight, radiusLight);
+		fill(255, 250, 240);
+		rect(panelX, symbolYS + panelYGap * 2, 10, 10);
+
 		fill(0, 0, 0);
-		text("5.0+ Magnitude", 75, 125);
-		text("4.0+ Magnitude", 75, 175);
-		text("Below 4.0", 75, 225);
+		text("City Marker", textX, symbolYS);
+		text("LandQuake", textX, symbolYS + panelYGap);
+		text("Ocean Quake", textX, symbolYS+panelYGap*2);
+
+		// Magnitude pane
+		symbolYS = symbolYS+panelYGap*4;
+		fill(0);
+		textAlign(LEFT, CENTER);
+		textSize(12);
+		text("size~Magnitude", panelX, symbolYS - panelYGap);
+
+		fill(colorMinor);
+		ellipse(panelX, symbolYS, radioMinor, radioMinor);
+		fill(coloroLight);
+		ellipse(panelX, symbolYS + panelYGap, radiusLight, radiusLight);
+		fill(colorModerate);
+		ellipse(panelX, symbolYS + panelYGap * 2, radiusModerate, radiusModerate);
+		fill(255, 250, 240);
+		ellipse(panelX, symbolYS + panelYGap * 3, radiusModerate, radiusModerate);
+		line(panelX-radiusModerate, symbolYS + panelYGap * 3-radiusModerate,
+				panelX + radiusModerate, symbolYS + panelYGap * 3 + radiusModerate);
+		line(panelX-radiusModerate, symbolYS + panelYGap * 3 + radiusModerate,
+				panelX+radiusModerate, symbolYS + panelYGap * 3-radiusModerate);
+
+		fill(0, 0, 0);
+		text("shallow", textX, symbolYS);
+		text("intermediate", textX, symbolYS+panelYGap);
+		text("deep", textX, symbolYS+panelYGap*2);
+		text("Past hour", textX, symbolYS+panelYGap*3);
 	}
 
 	
@@ -165,7 +204,13 @@ public class EarthquakeCityMap extends PApplet {
 		// IMPLEMENT THIS: loop over all countries to check if location is in any of them
 		
 		// TODO: Implement this method using the helper method isInCountry
-		
+		// has finished this todo
+		for (Marker country : countryMarkers){
+			if (isInCountry(earthquake, country)){
+				earthquake.addProperty("country", country.getStringProperty("name"));
+				return true;
+			}
+		}
 		// not inside any country
 		return false;
 	}
@@ -176,11 +221,30 @@ public class EarthquakeCityMap extends PApplet {
 	// the quakes to count how many occurred in that country.
 	// Recall that the country markers have a "name" property, 
 	// And LandQuakeMarkers have a "country" property set.
-	private void printQuakes() 
-	{
+	// This method is asked to display each country with 1 or more earthquakes and
+	// the number of earthquakes detected in that country
+	private void printQuakes() {
 		// TODO: Implement this method
+		// has finished this todo
+		Map<String, Integer> countryQuakes = new HashMap<>();
+		for (Marker marker : quakeMarkers) {
+			String country = marker.getStringProperty("country");
+			if (country != null) {
+				Integer number = countryQuakes.get(country);
+				if (number != null) {
+					countryQuakes.put(country, number + 1);
+				} else {
+					countryQuakes.put(country, 1);
+				}
+			}
+		}
+		Set set = countryQuakes.entrySet();
+		Iterator it = set.iterator();
+		while (it.hasNext()) {
+			Map.Entry entry = (Map.Entry)it.next();
+			System.out.println("country : "+entry.getKey()+"; earthquakeNum : "+entry.getValue());
+		}
 	}
-	
 	
 	
 	// helper method to test whether a given earthquake is in a given country
@@ -217,4 +281,7 @@ public class EarthquakeCityMap extends PApplet {
 		return false;
 	}
 
+	public static void main(String[] args){
+		PApplet.main( new String[] { "--present", new EarthquakeCityMap().getClass().getName() });
+	}
 }
